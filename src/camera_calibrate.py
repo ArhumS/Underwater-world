@@ -6,10 +6,8 @@ import argparse
 class StereoCalibration(object):
     def __init__(self, filepath):
         # termination criteria
-        self.criteria = (cv2.TERM_CRITERIA_EPS +
-                         cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        self.criteria_cal = (cv2.TERM_CRITERIA_EPS +
-                             cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-5)
+        self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        self.criteria_cal = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-5)
 
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
         self.objp = np.zeros((7*6, 3), np.float32)
