@@ -15,5 +15,5 @@ if __name__ == '__main__':
     os.mkdir(sys.argv[2])
     os.system("./ffmpeg -i " + sys.argv[1] + " -map 0:0 -vcodec copy -an " + sys.argv[2] + "/left.avi")
     os.system("./ffmpeg -i " + sys.argv[1] + " -map 0:2 -vcodec copy -an " + sys.argv[2] + "/right.avi")
-    os.system("./ffmpeg -i " + sys.argv[2] + "/left.avi -an " + sys.argv[2] + "/left.%d.ppm")
-    os.system("./ffmpeg -i " + sys.argv[2] + "/right.avi -an " + sys.argv[2] + "/right.%d.ppm")
+    os.system("./ffmpeg -i " + sys.argv[2] + "/left.avi -an " + sys.argv[2] + "/left.%010d.ppm")
+    os.system("./ffmpeg -i " + sys.argv[2] + "/right.avi -an " + sys.argv[2] + "/right.%010d.ppm")
