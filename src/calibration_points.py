@@ -58,22 +58,26 @@ for i in range(0 , lengthr) :
   imgl[:,:,0] = imgl[:,:,2]
   grayl = cv2.cvtColor(imgl,cv2.COLOR_BGR2GRAY)
   retl, cornersl = cv2.findChessboardCorners(grayl, (rows,columns), None)
-  tmpl = cv2.resize(imgl ,(0,0) ,None ,0.5, 0.5)
   if not retl :
+    tmpl = cv2.resize(imgl ,(0,0) ,None ,0.5, 0.5)
     cv2.putText(tmpl, limages[i] + ' fails', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
   else :
     cv2.cornerSubPix(grayl, cornersl, (11,11), (-1,-1), criteria)
+    cv2.drawChessboardCorners(imgl, (rows, columns), cornersl, retl)
+    tmpl = cv2.resize(imgl ,(0,0) ,None ,0.5, 0.5)
     cv2.putText(tmpl, limages[i] + ' success', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
   imgr = cv2.imread(rimages[i])
   imgr[:,:,0] = imgr[:,:,2]
   grayr = cv2.cvtColor(imgr,cv2.COLOR_BGR2GRAY)
   retr, cornersr = cv2.findChessboardCorners(grayr, (rows,columns), None)
-  tmpr = cv2.resize(imgr ,(0,0) ,None ,0.5, 0.5)
   if not retr :
+    tmpr = cv2.resize(imgr ,(0,0) ,None ,0.5, 0.5)
     cv2.putText(tmpr, rimages[i] + ' fails', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
   else :
     cv2.cornerSubPix(grayr, cornersr, (11,11), (-1,-1), criteria)
+    cv2.drawChessboardCorners(imgr, (rows, columns), cornersr, retr)
+    tmpr = cv2.resize(imgr ,(0,0) ,None ,0.5, 0.5)
     cv2.putText(tmpr, rimages[i] + ' success', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
   if args.display :
