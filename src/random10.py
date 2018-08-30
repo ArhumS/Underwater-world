@@ -1,36 +1,147 @@
+import argparse 
 import json
 import random
 import cv2
 import numpy as np
+import sys
 
-def randUniqueList(list, n) :
+def randUniqueList(llist, n) :
   out = []
   while len(out) < n :
-    t = random.choice(list)
+    t = random.choice(llist)
     try :
       out.index(t)
     except :
       out.append(t)
   return out
 
-#load json- text file (same directory)
-with open("info.txt", "r") as f :
-  images = json.load(f)
+def addOneToList(llist, cur) :
+  out = list(cur) # make a copy
+  while True :
+    t = random.choice(llist)
+    try :
+      out.index(t)
+    except :
+      out.append(t)
+      return out
 
-# choose 10 random images
-pts = randUniqueList(images.keys(), 10)
-for p in pts :
-  q = images[p]
-  l = np.asarray(q['leftpts'])
-  r = np.asarray(q['rightpts'])
-  print 'printing out frame ' + str(q['left']) + ' ' + str(q['right'])
-  leftfile = q['left']
-  shape = cv2.imread(leftfile).shape
-  
-print l
-print 'done'
-print 'shape is ' + str(shape)
-print shape[0:2]
+def fixProject(lp) :
+  r = []
+  for q in lp :
+    r.append(q[0])
+  r = np.array(r)
+  return r
 
 
+# attempt a calibration with a random set of calibration targets
+def calibrationAttempt(pts, rows, cols) :
+  global retL, mtxL, distL, rvecsL, tvecsL
+  global retR, mtxR, distR, rvecsR, tvecsR
+  objp = np.zeros((rows*cols, 3), np.float32)
+  objp[:, :2] = np.mgrid[0:rows, 0:cols].T.reshape(-1, 2)
 
+  objpoints = [] # 3D points in real world space
+  imgpointsL = [] # 2D image points (left)
+  imgpointsR = [] # 2D image points (right)
+  ishape = None
+  for p in pts :
+    q = images[p]
+    if ishape == None :
+      ishape = q['leftshape']
+    if not np.array_equal(ishape, q['leftshape']) :
+      print 'left array of ' + str(p) + ' incorrect size '
+      sys.exit(1)
+    if not np.array_equal(ishape, q['rightshape']) :
+      print 'right array of ' + str(p) + ' incorrect size '
+      sys.exit(1)
+
+    objpoints.append(objp)
+    
+    l = np.asfarray(q['leftpts'], dtype='float32')
+    l = np.reshape(l, (-1, 2))
+    imgpointsL.append(l)
+
+    r = np.asfarray(q['leftpts'], dtype='float32')
+    r = np.reshape(l, (-1, 2))
+    imgpointsR.append(r)
+
+  retL, mtxL, distL, rvecsL, tvecsL = cv2.calibrateCamera(objpoints, imgpointsL, tuple(ishape[:-1]), None, None)
+  retR, mtxR, distR, rvecsR, tvecsR = cv2.calibrateCamera(objpoints, imgpointsR, tuple(ishape[:-1]), None, None)
+
+  errL = 0
+  for i in range(len(objpoints)) :
+    lp, _ = cv2.projectPoints(objpoints[i], rvecsL[i], tvecsL[i], mtxL, distL)
+    lp = fixProject(lp)
+    t =  cv2.norm(imgpointsL[i], lp, cv2.NORM_L2) / len(lp)
+    errL += t 
+  errL = errL / len(objpoints)
+
+  errR = 0
+  for i in range(len(objpoints)) :
+    rp, _ = cv2.projectPoints(objpoints[i], rvecsR[i], tvecsR[i], mtxR, distR)
+    rp = fixProject(rp)
+    t =  cv2.norm(imgpointsR[i], rp, cv2.NORM_L2) / len(rp)
+    errR += t 
+  errR = errR / len(objpoints)
+
+  err = (errL + errR) / 2
+  return err
+
+def initializeSequence(images, args) :
+  pts = randUniqueList(images.keys(), args.ssize)
+  errMin = calibrationAttempt(pts, args.rows, args.cols)
+  count = 0
+  while True :
+    ptsp = addOneToList(images.keys(), pts)
+    err = calibrationAttempt(ptsp, args.rows, args.cols)
+
+    if err < errMin :
+      errMin = err
+      pts = ptsp
+      count = 0
+    else :
+      count = count + 1
+      if count >= args.ntries :
+        break
+      
+  return (errMin, pts)
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  parser.add_argument('json', help='json calibration target file')
+  parser.add_argument('output', help='json calibration output file')
+  parser.add_argument('--ssize', type=int, default=10, help='Image pair sample size')
+  parser.add_argument('--rows', type=int, default=7, help='number of rows in calibration target')
+  parser.add_argument('--cols', type=int, default=6, help='number of cols in calibration target')
+  parser.add_argument('--debug', type=bool, default=False, help='print debugging info')
+  parser.add_argument('--ntries', type=int, default=10, help='number of attempts to increase calibration set')
+  args = parser.parse_args()
+
+  with open(args.json, "r") as f :
+    images = json.load(f)
+
+  z = initializeSequence(images, args)
+  best = z
+  for i in range(20) :
+    z = initializeSequence(images, args)
+    print z[0], len(z[1])
+    if z[0] < best[0] :
+      best = z
+  print "Final calibration values "
+  q = calibrationAttempt(z[1], args.rows, args.cols)
+  print q
+  calib={}
+  calib['retL'] = retL
+  calib['mtxL'] = mtxL
+  calib['distL'] = distL
+  calib['rvecsL'] = rvecsL
+  calib['tvecsL'] = tvecsL
+  calib['retR'] = retR
+  calib['mtxR'] = mtxR
+  calib['distR'] = distR
+  calib['rvecsR'] = rvecsR
+  calib['tvecsR'] = tvecsR
+
+
+  with open(args.output,"w") as outfile :
+    json.dump(calib, outfile)
