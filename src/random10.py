@@ -5,6 +5,20 @@ import cv2
 import numpy as np
 import sys
 
+class NumpyEncoder(json.JSONEncoder):
+    """ Special json encoder for numpy types """
+    def default(self, obj):
+        if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
+            np.int16, np.int32, np.int64, np.uint8,
+            np.uint16, np.uint32, np.uint64)):
+            return int(obj)
+        elif isinstance(obj, (np.float_, np.float16, np.float32, 
+            np.float64)):
+            return float(obj)
+        elif isinstance(obj,(np.ndarray,)): #### This is the fix
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
 def randUniqueList(llist, n) :
   out = []
   while len(out) < n :
@@ -116,6 +130,7 @@ if __name__ == '__main__':
   parser.add_argument('--cols', type=int, default=6, help='number of cols in calibration target')
   parser.add_argument('--onlyRaw', type=int, default=-1, help='If >0 then only do raw guesses and output value')
   parser.add_argument('--ntries', type=int, default=10, help='number of attempts to increase calibration set')
+  parser.add_argument('--nprobes', type=int, default=10, help='number of probes into calibration space')
   args = parser.parse_args()
 
   with open(args.json, "r") as f :
@@ -131,7 +146,7 @@ if __name__ == '__main__':
   else :
     z = initializeSequence(images, args)
     best = z
-    for i in range(20) :
+    for i in range(args.nprobes) :
       z = initializeSequence(images, args)
       print z[0], len(z[1])
       if z[0] < best[0] :
@@ -150,7 +165,10 @@ if __name__ == '__main__':
     calib['distR'] = distR
     calib['rvecsR'] = rvecsR
     calib['tvecsR'] = tvecsR
+    calib['images'] = best[1]
+    calib['err'] = best[0]
 
 
+    dumped = json.dumps(calib, cls=NumpyEncoder)
     with open(args.output,"w") as outfile :
-      json.dump(calib, outfile)
+      json.dump(dumped, outfile)
