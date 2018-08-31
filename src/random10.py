@@ -92,6 +92,7 @@ def initializeSequence(images, args) :
   errMin = calibrationAttempt(pts, args.rows, args.cols)
   count = 0
   while True :
+    print "Number of pairs " + str(len(pts)) + " error " + str(errMin)
     ptsp = addOneToList(images.keys(), pts)
     err = calibrationAttempt(ptsp, args.rows, args.cols)
 
@@ -113,35 +114,43 @@ if __name__ == '__main__':
   parser.add_argument('--ssize', type=int, default=10, help='Image pair sample size')
   parser.add_argument('--rows', type=int, default=7, help='number of rows in calibration target')
   parser.add_argument('--cols', type=int, default=6, help='number of cols in calibration target')
-  parser.add_argument('--debug', type=bool, default=False, help='print debugging info')
+  parser.add_argument('--onlyRaw', type=int, default=-1, help='If >0 then only do raw guesses and output value')
   parser.add_argument('--ntries', type=int, default=10, help='number of attempts to increase calibration set')
   args = parser.parse_args()
 
   with open(args.json, "r") as f :
     images = json.load(f)
 
-  z = initializeSequence(images, args)
-  best = z
-  for i in range(20) :
+  print args.onlyRaw
+  if args.onlyRaw > 0 :
+    print "Doing raw guesses (only) " + str(args.onlyRaw)
+    for i in range(args.onlyRaw) :
+      pts = randUniqueList(images.keys(), args.ssize)
+      errMin = calibrationAttempt(pts, args.rows, args.cols)
+      print str(i) + ", " + str(errMin) + ", " + str(len(pts))
+  else :
     z = initializeSequence(images, args)
-    print z[0], len(z[1])
-    if z[0] < best[0] :
-      best = z
-  print "Final calibration values "
-  q = calibrationAttempt(z[1], args.rows, args.cols)
-  print q
-  calib={}
-  calib['retL'] = retL
-  calib['mtxL'] = mtxL
-  calib['distL'] = distL
-  calib['rvecsL'] = rvecsL
-  calib['tvecsL'] = tvecsL
-  calib['retR'] = retR
-  calib['mtxR'] = mtxR
-  calib['distR'] = distR
-  calib['rvecsR'] = rvecsR
-  calib['tvecsR'] = tvecsR
+    best = z
+    for i in range(20) :
+      z = initializeSequence(images, args)
+      print z[0], len(z[1])
+      if z[0] < best[0] :
+        best = z
+    print "Final calibration values "
+    q = calibrationAttempt(z[1], args.rows, args.cols)
+    print q
+    calib={}
+    calib['retL'] = retL
+    calib['mtxL'] = mtxL
+    calib['distL'] = distL
+    calib['rvecsL'] = rvecsL
+    calib['tvecsL'] = tvecsL
+    calib['retR'] = retR
+    calib['mtxR'] = mtxR
+    calib['distR'] = distR
+    calib['rvecsR'] = rvecsR
+    calib['tvecsR'] = tvecsR
 
 
-  with open(args.output,"w") as outfile :
-    json.dump(calib, outfile)
+    with open(args.output,"w") as outfile :
+      json.dump(calib, outfile)
