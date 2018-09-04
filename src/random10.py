@@ -98,6 +98,7 @@ def calibrationAttempt(pts, rows, cols) :
     errR += t 
   errR = errR / len(objpoints)
 
+
   err = (errL + errR) / 2
   return err
 
