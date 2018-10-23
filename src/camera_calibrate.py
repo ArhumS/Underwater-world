@@ -22,8 +22,8 @@ class StereoCalibration(object):
         self.read_images(self.cal_path)
 
     def read_images(self, cal_path):
-        images_right = glob.glob(cal_path + '/new/pairs/right/*.ppm')
-        images_left = glob.glob(cal_path + '/new/pairs/left/*.ppm')
+        images_right = glob.glob(cal_path + '/right*.ppm')
+        images_left = glob.glob(cal_path + '/left*.ppm')
         images_left.sort()
         images_right.sort()
 
@@ -96,40 +96,60 @@ class StereoCalibration(object):
         stereocalib_criteria = (cv2.TERM_CRITERIA_MAX_ITER +
                                 cv2.TERM_CRITERIA_EPS, 100, 1e-5)
         print "about to call"
-        print dims
-        print self.d1
-        print self.d2
-        print self.M1
-        print self.M2
+        print 'Dimensions', dims
+        print 'Dist co-eff camera 1', self.d1
+        print 'Dist co-eff camera 2', self.d2
+        print 'Camera matrix 1', self.M1
+        print 'Camera matrix 2', self.M2
+
+# added rvecs and tvecs
+        print 'Rotatatioanal matrix r1',self.r1
+        print 'Rotatatioanal matrix r2',self.r2
+        print 'Translational matrix t1',self.t1
+        print 'Translational matrix t2',self.t2
+
 # for 2.4.8
         ret, M1, d1, M2, d2, R, T, E, F = cv2.stereoCalibrate(
-            self.objpoints, self.imgpoints_l, 
-            self.imgpoints_r, dims, self.M1, self.d1, self.M2,
-            self.d2, 
-            criteria=stereocalib_criteria, flags=flags)
+            self.objpoints, self.imgpoints_l, self.imgpoints_r, dims, self.M1, 
+            self.d1, self.M2, self.d2, criteria=stereocalib_criteria, flags=flags)
+
+#...output first camera matrix
 
         print('Intrinsic_mtx_1', M1)
-        print('dist_1', d1)
-        print('Intrinsic_mtx_2', M2)
-        print('dist_2', d2)
-        print('R', R)
-        print('T', T)
-        print('E', E)
-        print('F', F)
 
+#...dist_1 – output vector of distortion coefficients (k_1, k_2, p_1, p_2[, k_3[, k_4, k_5, k_6]]) of 4, 5, or 8 elements. 
+# The output vector length depends on the flags.
+
+        print('dist_1', d1)
+
+# Intrinsic_mtx_2 – output second camera matrix
+        print('Intrinsic_mtx_2', M2)
+
+# dist_2 – output lens distortion coefficients for the second camera
+        print('dist_2', d2)
+
+# R – Output rotation matrix between the 1st and the 2nd camera coordinate systems.
+        print('R', R)
+
+# T – Output translation vector between the coordinate systems of the cameras.
+        print('T', T)
+
+# E – Output essential matrix.
+        print('E', E)
+
+# F – Output fundamental matrix.
+        print('F', F)
+  	
         # for i in range(len(self.r1)):
         #     print("--- pose[", i+1, "] ---")
         #     self.ext1, _ = cv2.Rodrigues(self.r1[i])
         #     self.ext2, _ = cv2.Rodrigues(self.r2[i])
         #     print('Ext1', self.ext1)
         #     print('Ext2', self.ext2)
-
         print('')
 
-        camera_model = dict([('M1', M1), ('M2', M2), ('dist1', d1),
-                            ('dist2', d2), ('rvecs1', self.r1),
-                            ('rvecs2', self.r2), ('R', R), ('T', T),
-                            ('E', E), ('F', F)])
+        camera_model = dict([('M1', M1), ('M2', M2), ('dist1', d1),('dist2', d2),
+                             ('R',R), ('T',T),('E',E), ('F',F)])
 
         cv2.destroyAllWindows()
         return camera_model
@@ -139,4 +159,7 @@ if __name__ == '__main__':
     parser.add_argument('filepath', help='String Filepath')
     args = parser.parse_args()
     cal_data = StereoCalibration(args.filepath)
+
+# run python camera_calibrate.py  ~/target/calib11 
+
 
