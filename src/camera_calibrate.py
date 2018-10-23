@@ -113,31 +113,30 @@ class StereoCalibration(object):
             self.objpoints, self.imgpoints_l, self.imgpoints_r, dims, self.M1, 
             self.d1, self.M2, self.d2, criteria=stereocalib_criteria, flags=flags)
 
-#...output first camera matrix
+# outputs first camera matrix
 
         print('Intrinsic_mtx_1', M1)
 
-#...dist_1 – output vector of distortion coefficients (k_1, k_2, p_1, p_2[, k_3[, k_4, k_5, k_6]]) of 4, 5, or 8 elements. 
-# The output vector length depends on the flags.
+# output vector of distortion coefficients 
 
         print('dist_1', d1)
 
-# Intrinsic_mtx_2 – output second camera matrix
+# output second camera matrix
         print('Intrinsic_mtx_2', M2)
 
-# dist_2 – output lens distortion coefficients for the second camera
+# output lens distortion coefficients for the second camera
         print('dist_2', d2)
 
-# R – Output rotation matrix between the 1st and the 2nd camera coordinate systems.
+# R Output rotation matrix between the 1st and the 2nd camera coordinate systems.
         print('R', R)
 
-# T – Output translation vector between the coordinate systems of the cameras.
+# T Output translation vector between the coordinate systems of the cameras.
         print('T', T)
 
-# E – Output essential matrix.
+# E Output essential matrix.
         print('E', E)
 
-# F – Output fundamental matrix.
+# F Output fundamental matrix.
         print('F', F)
   	
         # for i in range(len(self.r1)):
