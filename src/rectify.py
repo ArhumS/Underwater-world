@@ -104,7 +104,8 @@ class StereoCalibration(object):
         print 'Rotatatioanal matrix r2',self.r2
         print 'Translational matrix t1',self.t1
         print 'Translational matrix t2',self.t2
-
+        print 'Dimension of dist-coeff 1', self.d1.shape
+        print 'Dimension of dist-coeff 2', self.d2.shape
 # for 2.4.8
         ret, M1, d1, M2, d2, R, T, E, F = cv2.stereoCalibrate(
             self.objpoints, self.imgpoints_l, self.imgpoints_r, dims, self.M1, 
@@ -140,7 +141,7 @@ class StereoCalibration(object):
         #     print('Ext2', self.ext2)
         camera_model = dict([('M1', M1), ('M2', M2), ('dist1', d1),('dist2', d2),
                              ('R',R), ('T',T),('E',E), ('F',F)])
-        ret,RL,RR,PL,PR,_, _,_ = cv2.stereoRectify(M1,M2,d1,d2 , self.gray_l.shape[::-1] ,R,T,self.r1,self.r2,self.t1,self.t2,alpha=-1)
+        RL,RR,PL,PR,_, _,_ = cv2.stereoRectify(M1,M2,d1,d2 , self.gray_l.shape[::-1] ,R,T,alpha=-1)
 
         mapL1, mapL2 = cv2.initUndistortRectifyMap(M1, d1, RL, PL, self.gray_l.shape[::-1], cv2.CV_32FC1);
         mapR1, mapR2 = cv2.initUndistortRectifyMap(M1, d1, RR, PR, self.gray_r.shape[::-1], cv2.CV_32FC1);
@@ -178,11 +179,6 @@ if __name__ == '__main__':
 
       #      key = cv2.waitKey(400) & 0xFF; # wait 40ms (i.e. 1000ms / 25 fps = 40 ms)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filepath', help='String Filepath')
-    args = parser.parse_args()
-    cal_data = StereoCalibration(args.filepath)
 
 # It can also be set to detect specific key strokes by recording which key is pressed
 
