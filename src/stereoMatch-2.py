@@ -39,8 +39,8 @@ if __name__ == '__main__':
     sys.exit(0) 
 
   print 'loading images...' 
-  imgL = cv2.imread('left.1.jpg') 
-  imgR = cv2.imread('right.1.jpg') 
+  imgL = cv2.imread('undist_l.jpg') 
+  imgR = cv2.imread('undist_r.jpg') 
  
 # disparity range is not tuned at all... 
   window_size = 3 
