@@ -157,33 +157,3 @@ if __name__ == '__main__':
     parser.add_argument('filepath', help='String Filepath')
     args = parser.parse_args()
     cal_data = StereoCalibration(args.filepath)
-    # print()
-    # print("->>>> performing rectification")
-
-    # keep_processing = True;
-    # while (keep_processing):
-
-# grab frames from camera (to ensure best time sync.)
-
-           # camL.grab();
-           # camR.grab();
- # then retrieve the images in slow(er) time (do not be tempted to use read() !)
-  
-           #   ret, frameL = camL.retrieve();
-           #   ret, frameR = camR.retrieve();
-
-# undistort & rectify based on the mapping,could improve interpolation and image border settings here
-
-           
-# start the event loop - essential
-
-      #      key = cv2.waitKey(400) & 0xFF; # wait 40ms (i.e. 1000ms / 25 fps = 40 ms)
-
-
-# It can also be set to detect specific key strokes by recording which key is pressed
-
- # e.g. if user presses "x" then exit
-
-        #    if (key == ord('c')):
-         #       keep_processing = False;
- 
